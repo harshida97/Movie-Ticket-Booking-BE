@@ -1,86 +1,51 @@
+// controllers/movieController.js
+import Movie from '../models/movieModel.js';
 
-import Admin from '../models/adminModel.js';
-import Movie from '../models/movieModel.js'
-import { fileName } from "../upload.js";
+export const addMovie = async (req, res) => {
+    try {
+        const { title,description,releaseDate,duration,theater} = req.body;
+        const image = req.file ? req.file.path : null;
 
-//////// get allMovies /////////
-
-export const getAllMovies = async (req, res) => {
-    const allMovies = await Movie.find();
-    res.send(allMovies);
-  };
-      ///////// add new movie /////////////
-      export const newMovie = async (req, res) => { 
-  try{
-
-        const { title, description, releaseDate,time,pricePerSeat,adminEmail } = req.body;
-  
-        const findAdmin = await Admin.findOne({ email: adminEmail });
-        console.log('Admin found:', findAdmin);
-  
-        if (!findAdmin) {
-          return res.send("please add admin first");
-        }
-  
-        const addMovie = new Movie({
-          title,
-          description,
-          releaseDate,
-          time,
-          pricePerSeat,
-          image:fileName,
-          admin: findAdmin._id,
-          
+        const movie = new Movie({
+            title,
+            description,
+            releaseDate,
+            duration,
+            theater,
+            image // Save the image path in the database
         });
-        
-        
-        const newMovieAdded = await addMovie.save();
-        if (!newMovieAdded) {
-          return res.send("Movie is not added");
-        }
-        return res.send(newMovieAdded);
-    
 
-
-
+        await movie.save();
+        res.status(201).json({ message: 'Movie added successfully', movie });
     } catch (error) {
-      console.log("something went wrong", error);
-     return res.send("failed to add movie");
+        res.status(500).json({ message: error.message });
     }
-  }
+};
 
 
 
-
-  // update Movie
-  
-export const updateMovie = async (req, res) => {
-    const id = req.params.id;
-
-    const{title,description,price,admin} = req.body
-  
-    const updatedMovie = await Movie.findOneAndUpdate({ _id: id },{ title,description, price, admin },
-      {
-        new: true,   // it shows the updated value at that time
-      }
-    );
-  
-    if (!updatedMovie) {
-      return res.send("Movie is not updated");
-    }
-    console.log(updatedMovie);
-    return res.send(updatedMovie);
-  };
-
-
-
-  //delete Movie
-  
 export const deleteMovie = async (req, res) => {
-    const id = req.params.id;
-    const deleteId = await Movie.deleteOne({ _id: id });
-    if (!deleteId) {
-      return res.send("movie not deleted");
+    try {
+        const { id } = req.params; // Get the movie ID from the request parameters
+        const movie = await Movie.findByIdAndDelete(id); // Delete the movie
+
+        if (!movie) {
+            return res.status(404).json({ message: 'Movie not found' }); // Handle case where movie is not found
+        }
+
+        res.status(200).json({ message: 'Movie deleted successfully' }); // Respond with success message
+    } catch (error) {
+        res.status(500).json({ message: error.message }); // Handle any errors
     }
-    return res.send("Movie deleted");
-  };                                                                                                                                                                
+};
+
+
+
+export const listMovies = async (req, res) => {
+    try {
+        const movies = await Movie.find().populate('theater');
+        res.json(movies);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};

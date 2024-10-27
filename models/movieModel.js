@@ -1,41 +1,12 @@
-import mongoose from "mongoose";
+import mongoose from 'mongoose';
 
 const movieSchema = new mongoose.Schema({
-    title:{
-        type:String,
-        required:true
-    },
-    image:{
-        type: String 
-    },
-    description:{
-        type:String,
-        required:true
-    },
-    releaseDate:{
-        type:Date,
-        required:true
-    },
-    time: {
-        type: Date,
-        required: true
-      },
-      pricePerSeat: {
-        type: Number,
-        required: true
-      },
-    bookings:[{
-        type:mongoose.Types.ObjectId,
-        ref:"Bookig"
-    }],
-    admin:{
-        type:mongoose.Types.ObjectId,
-        ref:"Admin",
-        required:true
-    }
+    title: { type: String, required: true },
+    description: {type:String},
+    releaseDate: { type: String },
+    duration: { type: String, required: true },
+    theater: { type: mongoose.Schema.Types.ObjectId, ref: 'Theater' } ,// Reference to the Theater model
+    image: { type: String }, // Add a field for the image URL or path
+}, { timestamps: true });
 
-})
-
-const Movie = mongoose.model('Movie',movieSchema)
-
-export default Movie;
+export default mongoose.model('Movie', movieSchema);

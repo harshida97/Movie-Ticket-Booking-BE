@@ -1,100 +1,82 @@
-import bcrypt from 'bcrypt'
-import User from '../models/userModel.js'
-import { generateToken } from '../utils/generateToken.js'
-import Booking from '../models/bookingModel.js';
+import User from '../models/userModel.js';
+import jwt from 'jsonwebtoken';
+import bcrypt from 'bcryptjs';
 
-///// get all users /////
-export const getAllUsers = async (_req, res) => {
-  const users = await User.find();
-  res.send(users);
+export const register = async (req, res) => {
+    const { name, email, password, role } = req.body;
+
+    try {
+        // Check if user already exists
+        const existingUser = await User.findOne({ email });
+        if (existingUser) {
+            return res.status(400).json({ message: 'Email already in use' });
+        }
+
+        // Hash the password before saving
+        const hashedPassword = await bcrypt.hash(password, 12);
+
+        // Create a new user
+        const user = new User({ name, email, password: hashedPassword, role });
+        await user.save();
+
+        
+
+        res.status(201).json({ message: 'User registered successfully' });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+export const login = async (req, res) => {
+    const { email, password } = req.body;
+
+    try {
+        // Find the user by email
+        const user = await User.findOne({ email });
+        if (!user) {
+            return res.status(401).json({ message: 'Invalid credentials' });
+        }
+
+        // Check if password matches
+        const isMatch = await bcrypt.compare(password, user.password);
+        if (!isMatch) {
+            return res.status(401).json({ message: 'Invalid credentials' });
+        }
+
+        // Generate JWT token
+        const token = jwt.sign({ id: user._id, role: user.role }, process.env.SECRET_KEY, { expiresIn: '1h' });
+
+        // Return both the token and user details
+        res.json({
+            token,
+            user: {
+                id: user._id,
+                role: user.role,
+                email: user.email,
+                name: user.name
+            }
+        });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
 };
 
 
+// Fetch all users with role 'user'
 
-  ///// signup /////
- const signup =async (req,res) =>{
+export const getUsers = async (req, res) => {
     try {
-        const { name,mobileNumber,email, password} = req.body
-    console.log(email);
- 
-    const userExist = await User.findOne({ email });
-    
-    
-    if (userExist) {
-      return res.send("User is already exist").status(400);
-    }
-    
-    const saltRounds = 10;
-    const hashPassword = await bcrypt.hash(password, saltRounds);
+        // Check if the user making the request is an admin
+        if (req.user.role !== 'admin') {
+            return res.status(403).json({ message: 'Access denied. Admins only.' });
+        }
 
-    const newUser = new User({
-        name,
-        mobileNumber,
-        email,
-        hashPassword
-    });
-    
-    const newUserCreated = await newUser.save();
-
-    if (!newUserCreated) {
-      return res.send("user is not created");
-    }
-
-    const token = generateToken(email);
-    res.cookie("token", token)
-    res.send("Signed successfully!");
-        
+        // Fetch all users with the role 'user'
+        const users = await User.find({ role: 'user' });
+        res.status(200).json(users);
     } catch (error) {
-        console.log(error, "Something wrong");
-        res.status(500).send("Internal Server Error");
+        res.status(500).json({ message: 'Server error' });
     }
-}
-
-///// signin  /////
- const signin = async (req, res) => {
-    try {
-      const { email, password } = req.body;
-  
-      const user = await User.findOne({ email });
-  
-      if (!user) {
-        return res.send("User not found");
-      }
-  
-      const matchPassword = await bcrypt.compare(password, user.hashPassword);
-  
-      if (!matchPassword) {
-        return res.send("Password is not correct");
-      }
-  
-      const token = generateToken(email);
-      res.cookie("token", token);
-      res.status(200).send({message:"Logged in!",auth:true,token});
-      
-    } catch (error) {
-      console.log(error, "Something wrong");
-      res.status(500).send("Internal Server Error");
-    }
-  };
-  
-
-  export {signup,signin}
+};
 
 
-  ////////// get booking of a user by id
-
-  export const getBookingofUser = async (req,res) => {
-    const id = req.params.id
-    try {
-      let userBookings = await Booking.find({user:id})
-      if(!userBookings){
-        return res.status(500).json({message:"Unable to get Booking"})
-      }
-      return res.status(200).json({userBookings})
-      
-    } catch (error) {
-      console.log(error, "Something wrong");
-      res.status(500).send("Internal Server Error");
-      
-    }
-  }

@@ -1,32 +1,11 @@
-import mongoose from "mongoose";
+// models/Theater.js
+import mongoose from 'mongoose';
 
 const theaterSchema = new mongoose.Schema({
-    theaterName:{
-        type:String,
-        required:true
-    },
-    address:{
-        type:String,
-        required:true
-    },
-    mobileNumber:{
-        type:Number,
-        required:true
-    },
-    seats: [{
-        seatNumber: {
-            type: String,
-            required: true
-        },
-        reserved: {
-            type: Boolean,
-            default: false
-        }
-    }]
+    name: { type: String, required: true },
+    location: { type: String, required: true },
+    owner: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+    isApproved: { type: Boolean, default: false },
+}, { timestamps: true });
 
-
-})
-
-const Theater = mongoose.model('Theater',theaterSchema)
-
-export default Theater;
+export default mongoose.model('Theater', theaterSchema);

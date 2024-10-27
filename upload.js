@@ -1,20 +1,20 @@
-//import mongoose from 'mongoose'
-import multer from 'multer'
-let fileName = ''
+// upload.js
+import multer from 'multer';
+import path from 'path';
 
-
-
+// Define storage configuration
 const storage = multer.diskStorage({
-    destination: function (req, image, cb) {
-      cb(null, 'uploads')    /// file storing path is uploads folder by clients
+    destination: (req, file, cb) => {
+        cb(null, 'upload'); // Directory where files will be saved
     },
-    filename: function (req, image, cb) {
-      fileName = image.originalname + '-' + Date.now()
-      
-      cb(null,fileName)
+    filename: (req, file, cb) => {
+        // Get the file extension and create a unique filename with a timestamp
+        const ext = path.extname(file.originalname);
+        cb(null, `${Date.now()}${ext}`);
     }
-  })
-  
-  const upload = multer({ storage: storage })
+});
 
-  export {upload,fileName}
+// Initialize Multer with storage configuration
+const upload = multer({ storage });
+
+export default upload;

@@ -1,25 +1,14 @@
-import mongoose from "mongoose"
+// models/Show.js
+import mongoose from 'mongoose';
 
 const showSchema = new mongoose.Schema({
-movie: {
-    type: mongoose.Types.ObjectId,
-    ref: 'Movie',
-    required: true
-  },
-  theater: {
-    type: mongoose.Types.ObjectId,
-    ref: 'Theater',
-    required: true
-  },
-  
-  seats: [{
-    number: String,
-    reserved: {
-      type: Boolean,
-      default: false
-    }
-  }]
-});
+    //theater: { type: mongoose.Schema.Types.ObjectId, ref: 'Theater', required: true },
+   // movie: { type: mongoose.Schema.Types.ObjectId, ref: 'Movie', required: true },
+    movie:{type:String,required:true},
+    showtime: { type: Date, required: true },
+    seatsAvailable: { type: Number, required: true },
+    pricePerSeat: { type: Number, required: true },
+    image: { type: String }, // Add a field for the image URL or path
+}, { timestamps: true });
 
-const Show = mongoose.model('Show', showSchema);
-export default Show;
+export default mongoose.model('Show', showSchema);

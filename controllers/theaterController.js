@@ -1,65 +1,80 @@
+// controllers/theaterController.js
 import Theater from '../models/theaterModel.js';
 
+export const registerTheater = async (req, res) => {
+    const { name, location } = req.body;
+    const theater = new Theater({ name, location, owner: req.user.id });
+    await theater.save();
+    res.json({ message: 'Theater registered successfully' });
+};
 
-///////  get All theaters ////
-export const getAllTheaters = async (req, res) => {
-    const theaters = await Theater.find();
-    res.send(theaters);
-  };
+export const listTheaters = async (req, res) => {
+  try {
+    const theaters = await Theater.find().populate('owner'); // Populate owner if needed
+    res.json(theaters); // Return all theaters as a JSON response
+  } catch (error) {
+    res.status(500).json({ message: 'Error fetching theaters: ' + error.message });
+  }
+};
 
-
-////////////// Add theater /////////////
-export const  addTheaterDetails= async (req,res) =>{
-    try {
-        const {theaterName,address,mobileNumber,seats} = req.body
- 
-        const addTheater = new Theater({
-            theaterName,
-            address,
-            mobileNumber,
-            seats
-            
-          });
-        
-          const newTheaterAdded = await addTheater.save();
-        if (!newTheaterAdded) {
-          return res.send("Theater details is not added");
-        }
-        return res.send(newTheaterAdded);
-
-    } catch (error) {
-        console.log("something went wrong", error);
-      res.send("failed to add theater");
-        
-    }
-}
-
-////////////// update theater Details ///////////
-
-export const updateTheaterDetails = async (req, res) => {
-    const id = req.params.id;
-    const{theaterName,address,mobileNumber} = req.body
+export const getTheaters = async (req, res) => {
   
-    const updatedTheaterDetails = await Theater.findOneAndUpdate({_id:id },{theaterName,address,mobileNumber },
-      {
-        new: true,   // it shows the updated value at that time
+  const theater = await Theater.findById(req.params.id).populate('owner');
+    res.json(theater);
+};
+
+
+export const approveTheater = async (req, res) => {
+  const { theaterId } = req.params;
+
+  try {
+    const theater = await Theater.findById(theaterId);
+    if (!theater) {
+      return res.status(404).json({ message: 'Theater not found' });
+    }
+
+    if (theater.isApproved) {
+      return res.status(400).json({ message: 'Theater is already approved' });
+    }
+
+    theater.isApproved = true; // Set isApproved to true
+    await theater.save(); // Save the updated theater
+
+    return res.status(200).json({ message: 'Theater approved successfully' });
+  } catch (error) {
+    return res.status(400).json({ message: error.message });
+  }
+};
+
+
+
+export const deleteTheater = async (req, res) => {
+  const theaterId = req.params.id;
+
+  try {
+    const deletedTheater = await Theater.findByIdAndDelete(theaterId);
+    if (!deletedTheater) {
+      return res.status(404).json({ message: 'Theater not found.' });
+    }
+    res.status(200).json({ message: 'Theater deleted successfully.' });
+  } catch (error) {
+    res.status(500).json({ message: 'Error deleting theater: ' + error.message });
+  }
+};
+
+
+
+
+{/*export const getTheaterById = async (req, res) => {
+  const { theaterId } = req.params;
+
+  try {
+      const theater = await Theater.findById(theaterId).populate('owner'); // Populate owner if necessary
+      if (!theater) {
+          return res.status(404).json({ message: 'Theater not found' });
       }
-    );
-  
-    if (!updatedTheaterDetails) {
-      return res.send("Theater Details is not updated");
-    }
-    console.log(updatedTheaterDetails);
-    return res.send(updatedTheaterDetails);
-  };
-
- ////////  delete theater details ////////
-  
- export const deleteTheaterDetails = async (req, res) => {
-    const id = req.params.id;
-    const deleteTheaterName = await Theater.deleteOne({_id:id });
-    if (!deleteTheaterName) {
-      return res.send("Theater details is not deleted");
-    }
-    return res.send("Theater details is deleted");
-  };                                                         
+      res.json(theater);
+  } catch (error) {
+      res.status(500).json({ message: 'Error fetching theater: ' + error.message });
+  }
+};    */}

@@ -1,25 +1,22 @@
-import jwt from "jsonwebtoken";
-import dotenv from "dotenv";
+import jwt from 'jsonwebtoken';
+import dotenv from 'dotenv';
 
 dotenv.config();
 
-const secret_key = process.env.SECRET_KEY;
+const secretKey = process.env.SECRET_KEY;
+
+if (!secretKey) {
+    throw new Error('SECRET_KEY environment variable is not defined');
+}
 
 export const generateToken = (email) => {
-return jwt.sign({ data: email }, secret_key, { expiresIn: "1d" });
+    return jwt.sign({ email }, secretKey, { expiresIn: '1d' });
 };
-      
-export const adminToken = (user) =>{
-    const SECRET_KEY = process.env.SECRET_KEY;
-    return jwt.sign({data:user.id,role:user.role},SECRET_KEY, {expiresIn: '1d'});
-}
 
-export const ownerToken = (user) =>{
-    const SECRET_KEY = process.env.SECRET_KEY;
-    return jwt.sign({data:user.id,role:user.role},SECRET_KEY, {expiresIn: '1d'});
-}
-
-export const userToken = (user) =>{
-    const SECRET_KEY = process.env.SECRET_KEY;
-    return jwt.sign({data:user.id,role:user.role},SECRET_KEY, {expiresIn: '1d'});
-}
+export const generateRoleToken = (user) => {
+    return jwt.sign(
+        { id: user.id, role: user.role },
+        secretKey,
+        { expiresIn: '1d' }
+    );
+};

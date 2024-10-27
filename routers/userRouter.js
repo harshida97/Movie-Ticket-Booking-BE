@@ -1,15 +1,13 @@
-import express from "express";
-const userRouter = express.Router();
-import {signup,signin, getBookingofUser} from '../controllers/userController.js';
-import { reserveTicket} from '../controllers/bookingController.js'
-import authenticateUser from "../middlewares/userMiddleware.js";
+// routes/userRoutes.js
+import express from 'express';
+import {isAuthenticated, isAdmin} from '../middlewares/middlewareAuth.js'
+import { register, login,getUsers} from '../controllers/userController.js';
+
+const router = express.Router();
+router.post('/register', register);
+router.post('/login', login);
+
+router.get('/users', isAuthenticated, isAdmin, getUsers);
 
 
-userRouter.post("/signup",signup);
-userRouter.post("/signin",signin);
-userRouter.post("/reserve-ticket",reserveTicket)
-//userRouter.delete("/delete-booking",authenticateUser,deleteBooking)
-userRouter.get("/userbooking/:id", getBookingofUser)
-
-
-export default userRouter;
+export default router;
