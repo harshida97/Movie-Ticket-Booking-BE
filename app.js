@@ -11,6 +11,15 @@ import bookingRouter from './routers/bookingRouter.js';
 dotenv.config();
 
 const app = express();
+
+// Middleware to set Content Security Policy
+app.use((req, res, next) => {
+  res.setHeader("Content-Security-Policy", "default-src 'self'; script-src 'self' https://vercel.live;");
+  next();
+});
+
+
+
 app.use(express.json());
 app.use(cookieParser());
 app.use(cors({
