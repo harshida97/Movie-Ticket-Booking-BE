@@ -15,7 +15,7 @@ app.use(express.json());
 app.use(cookieParser());
 app.use(cors({
   origin: [
-    "https://movie-ticket-booking-fe-u6oc.vercel.app/",
+    "https://movie-ticket-booking-fe-u6oc.vercel.app"
    // "http://localhost:5173"
   ],
   credentials: true,
@@ -37,6 +37,8 @@ app.use('/upload', express.static('upload')); // Serve static files from 'upload
 connect();
 console.log('MongoDB URI from .env in app.js:', process.env.DB_URL);
 
-app.listen(3000, () => {
-  console.log("Listening on port 3000");
+
+const PORT = process.env.PORT || 3000; // Define PORT here
+app.listen(PORT, () => {
+  console.log(`Listening on port ${PORT}`);
 });
