@@ -2,7 +2,7 @@
 import mongoose from 'mongoose';
 
 const theaterSchema = new mongoose.Schema({
-    name: { type: String, required: true },
+    theaterName: { type: String, required: true },
     location: { type: String, required: true },
     owner: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
     isApproved: { type: Boolean, default: false },
